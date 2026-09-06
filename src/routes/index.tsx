@@ -85,14 +85,15 @@ function Game() {
       ]
     : [];
 
-  const ellipseIds =
+  const outlineIds =
     target && hints >= 2
       ? idsInSubregion(target.subregion)
       : target && hints >= 1
         ? idsInRegion(target.region)
         : [];
-  const ellipseLabel =
+  const outlineLabel =
     target && hints >= 2 ? target.subregion : target && hints >= 1 ? target.region : undefined;
+
 
   const finished = result !== null;
 
@@ -124,9 +125,10 @@ function Game() {
             disabled={finished}
             correctId={finished ? (target?.id ?? null) : null}
             wrongId={result && !result.ok ? result.guessId : null}
-            highlightIds={ellipseIds}
-            ellipseIds={ellipseIds}
-            {...(ellipseLabel ? { ellipseLabel } : {})}
+            highlightIds={outlineIds}
+            outlineIds={outlineIds}
+            {...(outlineLabel ? { outlineLabel } : {})}
+
             resetKey={round}
           />
         </section>
