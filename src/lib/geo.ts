@@ -57,34 +57,27 @@ export const shapes: Shape[] = collection.features
 
 const shapeById = new Map(shapes.map((s) => [s.id, s]));
 
-/** Ellipse (in map coordinates) enclosing every country of a group. */
-export function groupEllipse(ids: string[]) {
-  const cxs: number[] = [];
-  const cys: number[] = [];
+/** Combined outline (in map coordinates) hugging every country of a group. */
+export function groupOutline(ids: string[]) {
+  let d = "";
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
   for (const id of ids) {
     const s = shapeById.get(id);
     if (!s) continue;
+    d += s.d;
     const [[bx0, by0], [bx1, by1]] = s.bounds;
-    cxs.push((bx0 + bx1) / 2);
-    cys.push((by0 + by1) / 2);
+    if (bx0 < x0) x0 = bx0;
+    if (by0 < y0) y0 = by0;
+    if (bx1 > x1) x1 = bx1;
+    if (by1 > y1) y1 = by1;
   }
-  if (!cxs.length) return null;
-  // Trim outliers (overseas territories) so the ring hugs the real landmass.
-  const trim = (arr: number[]) => {
-    const a = [...arr].sort((p, q) => p - q);
-    const lo = a[Math.floor((a.length - 1) * 0.08)]!;
-    const hi = a[Math.ceil((a.length - 1) * 0.92)]!;
-    return [lo, hi] as const;
-  };
-  const [x0, x1] = trim(cxs);
-  const [y0, y1] = trim(cys);
-  return {
-    cx: (x0 + x1) / 2,
-    cy: (y0 + y1) / 2,
-    rx: Math.max((x1 - x0) / 2 + 22, 26),
-    ry: Math.max((y1 - y0) / 2 + 22, 26),
-  };
+  if (!d) return null;
+  return { d, labelX: (x0 + x1) / 2, labelY: y0 };
 }
+
 
 
 export function idsInRegion(region: string) {
