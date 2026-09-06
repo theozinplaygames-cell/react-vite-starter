@@ -118,6 +118,7 @@ export function WorldMap({
     if (e.button !== 0) return;
     const svg = e.currentTarget;
     svg.setPointerCapture(e.pointerId);
+    const hit = (e.target as Element | null)?.getAttribute?.("data-id") ?? null;
     dragRef.current = {
       active: true,
       moved: false,
@@ -125,6 +126,7 @@ export function WorldMap({
       startY: e.clientY,
       offsetX: offset.x,
       offsetY: offset.y,
+      downId: hit,
     };
     setDragging(true);
   };
@@ -143,14 +145,28 @@ export function WorldMap({
     });
   };
 
-  const onPointerUp = (e: React.PointerEvent) => {
-    dragRef.current.active = false;
+  const finishPointer = (e: React.PointerEvent, allowSelect: boolean) => {
+    const d = dragRef.current;
+    const wasActive = d.active;
+    d.active = false;
     setDragging(false);
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
       // capture may already be released
     }
+    if (!wasActive || !allowSelect || d.moved || disabled) {
+      d.downId = null;
+      return;
+    }
+    // Resolve the country under the pointer (capture retargets the event).
+    let id = d.downId;
+    if (!id) {
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      id = el?.getAttribute?.("data-id") ?? null;
+    }
+    d.downId = null;
+    if (id) onSelect(id);
   };
 
   const transform = `translate(${offset.x.toFixed(2)} ${offset.y.toFixed(2)}) scale(${zoom.toFixed(4)})`;
@@ -167,10 +183,16 @@ export function WorldMap({
         aria-label="Mapa-múndi interativo"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
+        onPointerUp={(e) => finishPointer(e, true)}
+        onPointerCancel={(e) => finishPointer(e, false)}
+        onPointerLeave={(e) => finishPointer(e, false)}
       >
         <rect width={MAP_WIDTH} height={MAP_HEIGHT} className="fill-ocean" />
+        {outline && (
+          <g className="pointer-events-none" transform={transform}>
+            <path d={outline.d} vectorEffect="non-scaling-stroke" className="hint-outline" />
+          </g>
+        )}
         <g transform={transform} strokeLinejoin="round" strokeLinecap="round">
           {shapes.map((s) => {
             const state =
@@ -187,42 +209,28 @@ export function WorldMap({
               <path
                 key={s.id}
                 d={s.d}
+                data-id={s.id}
                 vectorEffect="non-scaling-stroke"
                 data-state={state}
                 className="country"
-                onClick={() => {
-                  if (dragRef.current.moved) {
-                    dragRef.current.moved = false;
-                    return;
-                  }
-                  if (!disabled) onSelect(s.id);
-                }}
                 style={{ cursor: disabled ? "default" : "pointer" }}
               />
             );
           })}
         </g>
-        {ellipse && (
+        {outline && outlineLabel && (
           <g className="pointer-events-none" transform={transform}>
-            <ellipse
-              cx={ellipse.cx}
-              cy={ellipse.cy}
-              rx={ellipse.rx}
-              ry={ellipse.ry}
-              className="hint-ring"
-            />
-            {ellipseLabel && (
-              <text
-                x={ellipse.cx}
-                y={Math.max(14, ellipse.cy - ellipse.ry - 8)}
-                textAnchor="middle"
-                className="hint-label"
-              >
-                {ellipseLabel}
-              </text>
-            )}
+            <text
+              x={outline.labelX}
+              y={Math.max(14, outline.labelY - 10)}
+              textAnchor="middle"
+              className="hint-label"
+            >
+              {outlineLabel}
+            </text>
           </g>
         )}
+
       </svg>
 
       <div className="absolute bottom-3 right-3 flex flex-col gap-1 rounded-xl border border-border bg-card/85 p-1 shadow-lg backdrop-blur-sm">
