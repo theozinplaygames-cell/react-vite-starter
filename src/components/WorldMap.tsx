@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MAP_HEIGHT, MAP_WIDTH, shapes, groupEllipse } from "@/lib/geo";
+import { MAP_HEIGHT, MAP_WIDTH, shapes, groupOutline } from "@/lib/geo";
+
 
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 8;
