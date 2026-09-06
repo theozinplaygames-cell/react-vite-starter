@@ -12,8 +12,9 @@ type Props = {
   correctId?: string | null;
   wrongId?: string | null;
   highlightIds?: string[];
-  ellipseIds?: string[];
-  ellipseLabel?: string;
+  outlineIds?: string[];
+
+  outlineLabel?: string;
   resetKey?: string | number;
 };
 
@@ -24,8 +25,9 @@ export function WorldMap({
   correctId,
   wrongId,
   highlightIds,
-  ellipseIds,
-  ellipseLabel,
+  outlineIds,
+  outlineLabel,
+
   resetKey,
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -48,10 +50,11 @@ export function WorldMap({
   }, [resetKey]);
 
   const highlight = useMemo(() => new Set(highlightIds ?? []), [highlightIds]);
-  const ellipse = useMemo(
-    () => (ellipseIds && ellipseIds.length ? groupEllipse(ellipseIds) : null),
-    [ellipseIds],
+  const outline = useMemo(
+    () => (outlineIds && outlineIds.length ? groupOutline(outlineIds) : null),
+    [outlineIds],
   );
+
 
   const clientToSvg = useCallback((clientX: number, clientY: number) => {
     const svg = svgRef.current;
