@@ -231,13 +231,26 @@ body {
   stroke-width: 1.2;
 }
 
-.hint-ring {
-  fill: color-mix(in oklab, var(--hint) 10%, transparent);
+.hint-outline {
+  fill: none;
   stroke: var(--hint);
-  stroke-width: 2;
-  stroke-dasharray: 10 7;
-  animation: ring-in 500ms ease-out both, ring-spin 30s linear infinite;
+  stroke-width: 7;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--hint) 70%, transparent));
+  animation: outline-in 400ms ease-out both;
 }
+
+@keyframes outline-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.95;
+  }
+}
+
 .hint-label {
   fill: var(--hint);
   font-family: var(--font-display);
@@ -247,21 +260,8 @@ body {
   text-transform: uppercase;
 }
 
-@keyframes ring-in {
-  from {
-    opacity: 0;
-    stroke-dashoffset: 60;
-  }
-  to {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-}
-@keyframes ring-spin {
-  to {
-    stroke-dashoffset: -340;
-  }
-}
+
+
 
 .panel {
   background: color-mix(in oklab, var(--card) 88%, transparent);
