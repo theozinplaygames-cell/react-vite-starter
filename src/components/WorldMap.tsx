@@ -42,7 +42,9 @@ export function WorldMap({
     startY: 0,
     offsetX: 0,
     offsetY: 0,
+    downId: null as string | null,
   });
+
 
   useEffect(() => {
     setZoom(1);
